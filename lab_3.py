@@ -136,11 +136,12 @@ class InverseKinematics(Node):
 
         theta = np.array(initial_guess)
         learning_rate = 5.0
-        max_iterations = 10
-        tolerance = 0.005
+        max_iterations = 30
+        # tolerance in metres
+        tolerance = 0.5 / 100  # 0.1 cm
 
         cost_l = []
-        for _ in range(max_iterations):
+        for i in range(max_iterations):
             grad = gradient(theta)
             theta -= learning_rate * grad
 
@@ -148,8 +149,8 @@ class InverseKinematics(Node):
             _, l1_errors = cost_function(theta)
             cost_l.append(np.mean(l1_errors))
 
-            if len(cost_l) >= 2 and abs(cost_l[-1] - cost_l[-2]) <= tolerance:
-                print(f"Converged: {cost_l[-1]:.4f} vs {cost_l[-2]:.4f}")
+            if cost_l[-1] <= tolerance:
+                print(f"Converged after {i} iterations: {cost_l[-1]:.4f}")
                 break
 
             # TODO (BONUS): Implement the (quasi-)Newton's method instead of finite differences for faster convergence
@@ -159,19 +160,14 @@ class InverseKinematics(Node):
         return theta
 
     def interpolate_triangle(self, t: float) -> np.ndarray:
-        # Intepolate between the three triangle positions in the self.ee_triangle_positions
-        # based on the current time t
-        ################################################################################################
-        # TODO: Implement the interpolation function
-        ################################################################################################
         if t >= 0 and t <= 1:
-            shift = t * (self.ee_triangle_positions[1] - self.ee_triangle_positions[0])
+            shift = (t - 0) * (self.ee_triangle_positions[1] - self.ee_triangle_positions[0])
             return self.ee_triangle_positions[0] + shift
         elif t > 1 and t <= 2:
-            shift = (2 - t) * (self.ee_triangle_positions[2] - self.ee_triangle_positions[1])
+            shift = (t - 1) * (self.ee_triangle_positions[2] - self.ee_triangle_positions[1])
             return self.ee_triangle_positions[1] + shift
         elif t > 2 and t <= 3:
-            shift = (3 - t) * (self.ee_triangle_positions[0] - self.ee_triangle_positions[2])
+            shift = (t - 2) * (self.ee_triangle_positions[0] - self.ee_triangle_positions[2])
             return self.ee_triangle_positions[2] + shift
         else:
             raise ValueError(f"t out of bounds: {t} must be in [0, 3].")
