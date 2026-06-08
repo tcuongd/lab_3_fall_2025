@@ -130,14 +130,14 @@ class InverseKinematics(Node):
                 c_back, _ = cost_function(theta_back)
                 c_forward, _ = cost_function(theta_forward)
 
-                grads.append((c_forward - c_back) / 2 * epsilon)
+                grads.append((c_forward - c_back) / (2 * epsilon))
 
             return np.array(grads)
 
         theta = np.array(initial_guess)
         learning_rate = 5.0
         max_iterations = 10
-        tolerance = 0.01
+        tolerance = 0.005
 
         cost_l = []
         for _ in range(max_iterations):
