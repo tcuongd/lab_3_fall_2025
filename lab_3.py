@@ -141,6 +141,8 @@ class InverseKinematics(Node):
         tolerance = 0.5 / 100  # 0.1 cm
 
         cost_l = []
+        best_theta = None
+        best_cost = float("inf")
         for i in range(max_iterations):
             grad = gradient(theta)
             theta -= learning_rate * grad
@@ -149,15 +151,23 @@ class InverseKinematics(Node):
             _, l1_errors = cost_function(theta)
             cost_l.append(np.mean(l1_errors))
 
+            if np.mean(l1_errors) < best_cost:
+                best_cost = np.mean(l1_errors)
+                best_theta = theta.copy()
+
             if cost_l[-1] <= tolerance:
                 print(f"Converged after {i} iterations: {cost_l[-1]:.4f}")
-                break
+                return theta
 
             # TODO (BONUS): Implement the (quasi-)Newton's method instead of finite differences for faster convergence
 
         print(f"Cost: {cost_l}")
 
-        return theta
+        if best_theta is None:
+            print(f"[ERROR] no change suggested for theta.")
+            return theta
+
+        return best_theta
 
     def interpolate_triangle(self, t: float) -> np.ndarray:
         if t >= 0 and t <= 1:
@@ -175,8 +185,8 @@ class InverseKinematics(Node):
     def ik_timer_callback(self):
         if self.joint_positions is not None:
             target_ee = self.interpolate_triangle(self.t)
-            self.target_joint_positions = self.inverse_kinematics(target_ee, self.joint_positions)
             current_ee = self.forward_kinematics(*self.joint_positions)
+            self.target_joint_positions = self.inverse_kinematics(target_ee, current_ee)
 
             next_t = self.t + self.ik_timer.timer_period_ns / 1e9
             if next_t > 3:
