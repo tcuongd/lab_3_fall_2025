@@ -99,9 +99,9 @@ class InverseKinematics(Node):
         # Since we keep the frame orientation the same on both left and right sides, motors 1 and 3 will use negative angles on the left and positive angles on the right.
 
         T_0_1 = translation(+0.07500, -0.0335, 0) @ rotation_x(1.57080) @ rotation_z(+theta1)
-        T_1_2 = translation(0, 0, -0.039) @ rotation_y(-1.57080) @ rotation_z(+theta2)
+        T_1_2 = translation(0, 0, +0.039) @ rotation_y(-1.57080) @ rotation_z(+theta2)
         T_2_3 = translation(0, -0.0494, 0.0685) @ rotation_y(+1.57080) @ rotation_z(+theta3)
-        T_3_ee = translation(0.06231, -0.06216, -0.018)
+        T_3_ee = translation(0.06231, -0.06216, +0.018)
         T_0_ee = T_0_1 @ T_1_2 @ T_2_3 @ T_3_ee
 
         return T_0_ee[:3, 3].copy()
