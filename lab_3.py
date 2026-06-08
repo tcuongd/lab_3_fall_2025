@@ -148,7 +148,7 @@ class InverseKinematics(Node):
             _, l1_errors = cost_function(theta)
             cost_l.append(np.mean(l1_errors))
 
-            if abs(cost_l[-1] - cost_l[-2]) < tolerance:
+            if len(cost_l) >= 2 and abs(cost_l[-1] - cost_l[-2]) <= tolerance:
                 print(f"Converged: {cost_l[-1]:.4f} vs {cost_l[-2]:.4f}")
                 break
 
