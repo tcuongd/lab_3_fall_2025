@@ -6,7 +6,7 @@ import numpy as np
 
 np.set_printoptions(precision=3, suppress=True)
 
-Kp = 3
+Kp = 3.0
 Kd = 0.1
 
 
@@ -23,7 +23,7 @@ class InverseKinematics(Node):
         )
 
         self.pd_timer_period = 1.0 / 200  # 200 Hz
-        self.ik_timer_period = 1.0 / 20  # 20 Hz
+        self.ik_timer_period = 1.0 / 100  # 30 Hz
         self.pd_timer = self.create_timer(self.pd_timer_period, self.pd_timer_callback)
         self.ik_timer = self.create_timer(self.ik_timer_period, self.ik_timer_callback)
 
@@ -106,7 +106,7 @@ class InverseKinematics(Node):
 
         return T_0_ee[:3, 3].copy()
 
-    def inverse_kinematics(self, target_ee, initial_guess=[0, 0, 0]):
+    def inverse_kinematics(self, target_ee, initial_guess=[0.0, 0.0, 0.0]):
         def cost_function(theta) -> tuple[float, np.ndarray]:
             """
             Use the forward_kinematics method to get the current end-effector position.
@@ -134,11 +134,11 @@ class InverseKinematics(Node):
 
             return np.array(grads)
 
-        theta = np.array(initial_guess)
+        theta = np.array(initial_guess, dtype=np.float64)
         learning_rate = 5.0
-        max_iterations = 30
+        max_iterations = 20
         # tolerance in metres
-        tolerance = 0.5 / 100  # 0.1 cm
+        tolerance = 0.2 / 100
 
         cost_l = []
         best_theta = None
@@ -186,7 +186,7 @@ class InverseKinematics(Node):
         if self.joint_positions is not None:
             target_ee = self.interpolate_triangle(self.t)
             current_ee = self.forward_kinematics(*self.joint_positions)
-            self.target_joint_positions = self.inverse_kinematics(target_ee, current_ee)
+            self.target_joint_positions = self.inverse_kinematics(target_ee, initial_guess=self.joint_positions)
 
             next_t = self.t + self.ik_timer.timer_period_ns / 1e9
             if next_t > 3:
