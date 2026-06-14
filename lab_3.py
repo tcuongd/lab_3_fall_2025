@@ -23,7 +23,7 @@ class InverseKinematics(Node):
         )
 
         self.pd_timer_period = 1.0 / 200  # 200 Hz
-        self.ik_timer_period = 1.0 / 100  # 30 Hz
+        self.ik_timer_period = 1.0 / 20  # 20 Hz
         self.pd_timer = self.create_timer(self.pd_timer_period, self.pd_timer_callback)
         self.ik_timer = self.create_timer(self.ik_timer_period, self.ik_timer_callback)
 
@@ -190,7 +190,7 @@ class InverseKinematics(Node):
 
             next_t = self.t + self.ik_timer.timer_period_ns / 1e9
             if next_t > 3:
-                self.t = 0.0
+                self.t = next_t - 3
             else:
                 self.t = next_t
 
